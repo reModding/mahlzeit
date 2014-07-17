@@ -3,11 +3,11 @@
 require 'socket'
 
 class MyBot
-  def initialize(server, port, channel)
+  def initialize(server, port, channel, nick, login, username)
     @channel = channel
     @socket = TCPSocket.open(server, port)
-    say "NICK Mahlzeit"
-    say "USER Mahlzeit 0 * Mahlzeit"
+    say "NICK " + nick
+    say "USER " + login + " 0 * :" + username
     say "JOIN #{@channel}"
     say_to_chan "#{1.chr}ACTION is here to test#{1.chr}"
   end
@@ -50,7 +50,7 @@ class MyBot
   end
 end
 
-bot = MyBot.new("irc.space.net", 6667, '#rudeltest')
+bot = MyBot.new("irc.space.net", 6667, '#rudeltest', "Mahlzeit", "Mahlzeit", "MahlzeitBot")
 
 trap("INT"){ bot.quit }
 
