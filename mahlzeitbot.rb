@@ -37,8 +37,12 @@ class MyBot
 
       if msg.match(/PRIVMSG #{@channel} :(.*)$/)
         content = $~[1]
-	if content.match("hunger")
-	  say_to_chan('was wollt ihr essen?')
+	if content.match(/\+help"/)
+	  say_to_chan('+orte     - gibt eine Liste aller Orte aus, die ich kenne.')
+	  say_to_chan('+1 ort    - stimmt fuer den Ort.')
+	  say_to_chan('+stand    - gibt den aktuellen Punketstand aus.')
+	  say_to_chan('+wasgibts - schickt den aktuellen Intra-Link.')
+	  say_to_chan('+werfehlt - zeigt alle an, die noch nicht gevotet haben.')
 	end
       end
     end
@@ -50,7 +54,7 @@ class MyBot
   end
 end
 
-bot = MyBot.new("irc.space.net", 6667, '#rudeltest', "Mahlzeit", "Mahlzeit", "MahlzeitBot")
+bot = MyBot.new("irc.space.net", 6667, '#rudeltest', "MahlzeitT", "MahlzeitT", "MahlzeitBot")
 
 trap("INT"){ bot.quit }
 
