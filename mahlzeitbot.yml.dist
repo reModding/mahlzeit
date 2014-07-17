@@ -1,0 +1,5 @@
+irc:
+  server: ""
+  port: 6667
+  channel: "#rudel"
+  nick: "Mahlzeit"
