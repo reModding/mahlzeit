@@ -26,6 +26,10 @@ class MyBot
       msg = @socket.gets
       puts msg
 
+      if msg.match(/433/)
+        abort "Nick is already in use."
+      end
+
       if msg.match(/^PING :(.*)$/)
         say "PONG #{$~[1]}"
         next
