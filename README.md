@@ -1,2 +1,4 @@
-mahlzeitbot.rb
-==============
+mahlzeit
+========
+
+Mahlzeit-Bot
