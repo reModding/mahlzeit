@@ -20,8 +20,8 @@ class MyBot
   def say_to_chan(msg)
     say "PRIVMSG #{@channel} :#{msg}"
   end
-  
-  def run
+
+  def check
     until @socket.eof? do
       msg = @socket.gets
       puts msg
@@ -32,6 +32,10 @@ class MyBot
         abort "Nick is already in use."
       end
     end
+  end
+  
+  def run
+    check
 
     until @socket.eof? do
       msg = @socket.gets
