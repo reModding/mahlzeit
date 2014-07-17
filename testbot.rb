@@ -6,8 +6,8 @@ class MyBot
   def initialize(server, port, channel)
     @channel = channel
     @socket = TCPSocket.open(server, port)
-    say "NICK TestBot"
-    say "USER TestBot 0 * TestBot"
+    say "NICK Mahlzeit"
+    say "USER Mahlzeit 0 * Mahlzeit"
     say "JOIN #{@channel}"
     say_to_chan "#{1.chr}ACTION is here to test#{1.chr}"
   end
