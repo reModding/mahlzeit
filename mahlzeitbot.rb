@@ -23,6 +23,9 @@ class MyBot
   
   def run
     until @socket.eof? do
+      msg = @socket.gets
+      puts msg
+
       if msg.match(/004/)
         break
       elsif msg.match(/433/)
