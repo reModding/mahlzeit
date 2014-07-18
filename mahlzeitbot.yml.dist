@@ -3,3 +3,5 @@ irc:
   port: 6667
   channel: "#rudel"
   nick: "Mahlzeit"
+
+cache: "mahlzeitbot_cache.yml"

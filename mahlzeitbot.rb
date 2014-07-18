@@ -4,9 +4,10 @@ require 'socket'
 require 'yaml'
 
 class MyBot
-  def initialize(server, port, channel, nick)
+  def initialize(server, port, channel, nick, cache)
     @channel = channel
     @nick = nick
+    @cache = cache
     @socket = TCPSocket.open(server, port)
     say "NICK #{@nick}"
     say "USER #{@nick} 8 * :#{@nick}"
@@ -62,6 +63,7 @@ class MyBot
 	end
 
 	if content.match(/\+orte/)
+	  orte
 	end
 
 	if content.match(/\+stand/)
@@ -75,19 +77,19 @@ class MyBot
 	end
 
 	if content.match(/\+add (.*)/)
-	  loc = $~[1]
+	  loc = $~[1].chop
+
+	  add_loc loc
 	end
 
 	if content.match(/\+del (.*)/)
-	  loc = $~[1]
+	  loc = $~[1].chop
 	end
 
 	if content.match(/\+([0-9]*) (.*)/)
 	  votes = $~[1]
-	  voted_loc = $~[2]
+	  voted_loc = $~[2].chop
 	end
-
-        next
       end
     end
   end
@@ -102,7 +104,34 @@ class MyBot
     say_to_chan "+del ORT  - entfernt einen Ort."
   end
 
-  def wasgibts nick
+  def orte
+    file = YAML.load_file(@cache)
+    file_keys = []
+
+    file["locations"].each do |k|
+      file_keys << k
+    end
+
+    say_to_chan(file_keys.join(", "))
+  end
+
+  def add_loc(loc)
+    file = YAML.load_file(@cache)
+
+    if file["locations"].map { |k, v| k.downcase }.include?(loc.downcase)
+      say_to_chan "#{loc} kenne ich bereits."
+    else
+      file["locations"]["#{loc}"] = ""
+    
+      File.open(@cache, "w") do |f|
+        f.write file.to_yaml
+      end
+
+      say_to_chan "#{loc} hinzugefuegt."
+    end
+  end
+
+  def wasgibts(nick)
     say_to_chan("#{nick}, schau bitte hier: http://intra.space.net/x/lQFl")
   end
 
@@ -114,7 +143,7 @@ end
 
 
 config = YAML.load_file("mahlzeitbot.yml")
-bot = MyBot.new(config["irc"]["server"], config["irc"]["port"], config["irc"]["channel"], config["irc"]["nick"])
+bot = MyBot.new(config["irc"]["server"], config["irc"]["port"], config["irc"]["channel"], config["irc"]["nick"], config["cache"])
 
 trap("INT"){ bot.quit }
 
