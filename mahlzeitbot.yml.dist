@@ -5,3 +5,5 @@ irc:
   nick: "Mahlzeit"
 
 cache: "mahlzeitbot_cache.yml"
+
+wasgibts: ""

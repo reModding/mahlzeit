@@ -4,10 +4,11 @@ require 'socket'
 require 'yaml'
 
 class MyBot
-  def initialize(server, port, channel, nick, cache)
+  def initialize(server, port, channel, nick, cache, wasgibts)
     @channel = channel
     @nick = nick
     @cache = cache
+    @wasgibts = wasgibts
     @socket = TCPSocket.open(server, port)
     say "NICK #{@nick}"
     say "USER #{@nick} 8 * :#{@nick}"
@@ -62,6 +63,11 @@ class MyBot
 	  help
 	end
 
+	if content.match(/\+([0-9]*) (.*)/)
+	  votes = $~[1]
+	  voted_loc = $~[2].chop
+	end
+
 	if content.match(/\+orte/)
 	  orte
 	end
@@ -86,9 +92,7 @@ class MyBot
 	  loc = $~[1].chop
 	end
 
-	if content.match(/\+([0-9]*) (.*)/)
-	  votes = $~[1]
-	  voted_loc = $~[2].chop
+	if content.match(/\+reset/)
 	end
       end
     end
@@ -102,6 +106,7 @@ class MyBot
     say_to_chan "+werfehlt - zeigt alle an, die noch nicht gevotet haben."
     say_to_chan "+add ORT  - fuegt einen Ort hinzu."
     say_to_chan "+del ORT  - entfernt einen Ort."
+    say_to_chan "+reset    - setzt alle Votes zurueck."
   end
 
   def orte
@@ -132,7 +137,7 @@ class MyBot
   end
 
   def wasgibts(nick)
-    say_to_chan("#{nick}, schau bitte hier: http://intra.space.net/x/lQFl")
+    say_to_chan("#{nick}, schau bitte hier: #{@wasgibts}")
   end
 
   def quit
@@ -143,7 +148,7 @@ end
 
 
 config = YAML.load_file("mahlzeitbot.yml")
-bot = MyBot.new(config["irc"]["server"], config["irc"]["port"], config["irc"]["channel"], config["irc"]["nick"], config["cache"])
+bot = MyBot.new(config["irc"]["server"], config["irc"]["port"], config["irc"]["channel"], config["irc"]["nick"], config["cache", config["wasgibts"]])
 
 trap("INT"){ bot.quit }
 
