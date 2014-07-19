@@ -7,9 +7,12 @@ class MyBot
   def initialize(server, port, channel, nick, cache, wasgibts)
     @channel = channel
     @nick = nick
-    @cache = cache
+    @cache_file = cache
     @wasgibts = wasgibts
+
+    @cache = YAML.load_file(@cache_file)
     @socket = TCPSocket.open(server, port)
+
     say "NICK #{@nick}"
     say "USER #{@nick} 8 * :#{@nick}"
     say "JOIN #{@channel}"
@@ -23,6 +26,12 @@ class MyBot
 
   def say_to_chan(msg)
     say "PRIVMSG #{@channel} :#{msg}"
+  end
+
+  def write_cache
+    File.open(@cache_file, "w") do |f|
+      f.write @cache.to_yaml
+    end
   end
 
   def check
@@ -64,8 +73,14 @@ class MyBot
 	end
 
 	if content.match(/\+([0-9]*) (.*)/)
-	  votes = $~[1]
+	  votes = $~[1].to_i
 	  voted_loc = $~[2].chop
+
+	  if votes > 1
+	    say_to_chan "Ich habe das Gefuehl, #{nick} ist heute besonders hungrig. Trotzdem hat jeder nur eine Stimme pro Ort."
+	  elsif votes == 1
+	    add_vote voted_loc, nick, login
+	  end
 	end
 
 	if content.match(/\+orte/)
@@ -73,6 +88,7 @@ class MyBot
 	end
 
 	if content.match(/\+stand/)
+	  stand
 	end
 
 	if content.match(/\+wasgibts/)
@@ -109,29 +125,77 @@ class MyBot
     say_to_chan "+reset    - setzt alle Votes zurueck."
   end
 
-  def orte
-    file = YAML.load_file(@cache)
-    file_keys = []
+  def count_votes(loc)
+    vote_count = -1
 
-    file["locations"].each do |k|
-      file_keys << k
+    @cache["locations"].each do |k, v|
+      if k.downcase == loc.downcase
+        vote_count = @cache["locations"][k].split(",").length
+      end
     end
 
-    say_to_chan(file_keys.join(", "))
+    return vote_count
+  end
+
+  def add_vote(voted_loc, nick, login)
+    res = 0
+
+    @cache["locations"].each do |k, v|
+      if k.downcase == voted_loc.downcase
+        if @cache["locations"][k].nil?
+          @cache["locations"][k] = "#{login}"
+          write_cache
+	  res = 1
+	elsif @cache["locations"][k].split(",").include?(login)
+	  res = 2
+	else
+          @cache["locations"][k] << "#{login},"
+          write_cache
+	  res = 1
+	end
+
+        break
+      end
+    end
+
+    case res
+      when 0
+        say_to_chan "#{voted_loc} kenne ich nicht."
+      when 1
+        say_to_chan "#{nick} stimmt fuer #{voted_loc}. Neuer Punktestand: #{count_votes voted_loc}"
+      when 2
+        say_to_chan "Sorry, aber Du (#{login}) hast bereits abgestimmt."
+    end
+  end
+
+  def orte
+    loc_keys = []
+
+    @cache["locations"].each do |k, v|
+      loc_keys << k
+    end
+
+    say_to_chan(loc_keys.join(", "))
+  end
+
+  def stand
+    loc_stand = []
+
+    @cache["locations"].each do |k, v|
+      unless v.nil?
+        loc_stand << "#{v.split(",").length}x #{k}"
+      end
+    end
+
+    say_to_chan(loc_stand.join(", "))
   end
 
   def add_loc(loc)
-    file = YAML.load_file(@cache)
-
-    if file["locations"].map { |k, v| k.downcase }.include?(loc.downcase)
+    if @cache["locations"].map { |k, v| k.downcase }.include?(loc.downcase)
       say_to_chan "#{loc} kenne ich bereits."
     else
-      file["locations"]["#{loc}"] = ""
-    
-      File.open(@cache, "w") do |f|
-        f.write file.to_yaml
-      end
-
+      @cache["locations"]["#{loc}"] = ""
+      write_cache
       say_to_chan "#{loc} hinzugefuegt."
     end
   end
@@ -148,7 +212,7 @@ end
 
 
 config = YAML.load_file("mahlzeitbot.yml")
-bot = MyBot.new(config["irc"]["server"], config["irc"]["port"], config["irc"]["channel"], config["irc"]["nick"], config["cache", config["wasgibts"]])
+bot = MyBot.new(config["irc"]["server"], config["irc"]["port"], config["irc"]["channel"], config["irc"]["nick"], config["cache"], config["wasgibts"])
 
 trap("INT"){ bot.quit }
 
