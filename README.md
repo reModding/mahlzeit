@@ -14,7 +14,7 @@ Installation
 ```bash
 git clone ...
 cd mahlzeit/
-cp mahlzeitbot.yml.dist mahlzeitbot.yml
+for file in *.dist; do cp "$file" "$(basename $file .dist)"; done
 vim mahlzeitbot.yml
 chmod +x mahlzeitbot.rb
 ./mahlzeitbot.rb
