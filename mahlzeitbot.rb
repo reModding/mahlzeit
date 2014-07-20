@@ -89,6 +89,12 @@ class MyBot
           end
         end
 
+	if content.match(/-1 (.*)/)
+	  voted_loc = $~[1].chop
+
+	  del_vote voted_loc, nick, login
+	end
+
         if content.match(/\+orte/)
           orte
         end
@@ -146,11 +152,12 @@ class MyBot
   def help
     say_to_chan "+orte     - gibt eine Liste aller Orte aus, die ich kenne."
     say_to_chan "+1 ORT    - stimmt fuer den Ort."
+    say_to_chan "-1 ORT    - nimmt seine Stimme zurueck."
     say_to_chan "+stand    - gibt den aktuellen Punktestand aus."
     say_to_chan "+wasgibts - schickt den aktuellen Intra-Link."
     say_to_chan "+werfehlt - zeigt alle an, die noch nicht gevotet haben."
     say_to_chan "+add ORT  - fuegt einen Ort hinzu."
-    say_to_chan "+del ORT  - entfernt einen Ort."
+#   say_to_chan "+del ORT  - entfernt einen Ort."
     say_to_chan "+reset    - setzt alle Votes zurueck."
   end
 
@@ -194,6 +201,40 @@ class MyBot
         say_to_chan "#{nick} stimmt fuer #{voted_loc}. Neuer Punktestand: #{count_votes voted_loc}"
       when 2
         say_to_chan "Sorry, aber Du (#{login}) hast bereits fuer #{voted_loc} gestimmt."
+    end
+  end
+
+  def del_vote(voted_loc, nick, login)
+    res = 0
+
+    @cache["locations"].each do |k, v|
+      if k.downcase == voted_loc.downcase
+        if @cache["locations"][k].nil?
+          res = 2
+        else
+          logins_voted = @cache["locations"][k].split(" ")
+	
+          if logins_voted.include?(login)
+            logins_voted.delete login
+            @cache["locations"][k] = logins_voted.join(" ")
+            write_cache
+	    res = 1
+          else
+	    res = 2
+          end
+        end
+
+	break
+      end
+    end
+
+    case res
+      when 0
+        say_to_chan "#{voted_loc} kenne ich nicht."
+      when 1
+        say_to_chan "#{nick} hat seine Stimme fuer #{voted_loc} zurueckgenommen. Neuer Punktestand: #{count_votes voted_loc}"
+      when 2
+        say_to_chan "Sorry, aber Du (#{login}) hast nicht fuer #{voted_loc} gestimmt."
     end
   end
 
