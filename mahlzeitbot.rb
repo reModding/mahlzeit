@@ -193,7 +193,7 @@ class MyBot
       when 1
         say_to_chan "#{nick} stimmt fuer #{voted_loc}. Neuer Punktestand: #{count_votes voted_loc}"
       when 2
-        say_to_chan "Sorry, aber Du (#{login}) hast bereits abgestimmt."
+        say_to_chan "Sorry, aber Du (#{login}) hast bereits fuer #{voted_loc} gestimmt."
     end
   end
 
@@ -270,7 +270,11 @@ class MyBot
       nick_list.delete_at(who_list_i)
     end
 
-    say_to_chan "Bitte voten. #{nick_list.join(", ")}"
+    if nick_list.length == 0
+      say_to_chan "Es haben schon alle im Channel abgestimmt."
+    else
+      say_to_chan "Bitte voten. #{nick_list.join(", ")}"
+    end
   end
 
   def reset
