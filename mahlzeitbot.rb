@@ -7,13 +7,9 @@ require 'yaml'
 class MyBot
   def initialize(server, port, channel, nick, cache, wasgibts)
     @channel = channel
-    @nick = nick
+    @nick = nick[0, 9]
     @cache_file = cache
     @wasgibts = wasgibts
-
-    if @nick.length > 9
-      abort "Nick is too long (max. 9 characters)."
-    end
 
     @lastvote = Date.today.yday
 
@@ -68,77 +64,77 @@ class MyBot
       end
 
       if msg.match(/^:(.*)!(.*) PRIVMSG #{@channel} :(.*)$/)
-	nick = $~[1]
-	login = $~[2]
+        nick = $~[1]
+        login = $~[2]
         content = $~[3]
 
-	if nick == @nick
-	  next
-	end
+        if nick == @nick
+          next
+        end
 
-	if content.match(/\+help/)
-	  help
-	end
+        if content.match(/\+help/)
+          help
+        end
 
-	if content.match(/\+([0-9]*) (.*)/)
-	  votes = $~[1].to_i
-	  voted_loc = $~[2].chop
+        if content.match(/\+([0-9]*) (.*)/)
+          votes = $~[1].to_i
+          voted_loc = $~[2].chop
 
-	  if votes > 1
-	    say_to_chan "Ich habe das Gefuehl, #{nick} ist heute besonders hungrig. Trotzdem hat jeder nur eine Stimme pro Ort."
-	  elsif votes == 1
-	    check_daily_reset
-	    add_vote voted_loc, nick, login
-	  end
-	end
+          if votes > 1
+            say_to_chan "Ich habe das Gefuehl, #{nick} ist heute besonders hungrig. Trotzdem hat jeder nur eine Stimme pro Ort."
+          elsif votes == 1
+            check_daily_reset
+            add_vote voted_loc, nick, login
+          end
+        end
 
-	if content.match(/\+orte/)
-	  orte
-	end
+        if content.match(/\+orte/)
+          orte
+        end
 
-	if content.match(/\+stand/)
-	  check_daily_reset
-	  stand
-	end
+        if content.match(/\+stand/)
+          check_daily_reset
+          stand
+        end
 
-	if content.match(/\+wasgibts/)
-	  wasgibts nick
-	end
+        if content.match(/\+wasgibts/)
+          wasgibts nick
+        end
 
-	if content.match(/\+werfehlt/)
-	  check_daily_reset
-	  say "WHO #{@channel}"
-	end
+        if content.match(/\+werfehlt/)
+          check_daily_reset
+          say "WHO #{@channel}"
+        end
 
-	if content.match(/\+add (.*)/)
-	  loc = $~[1].chop
+        if content.match(/\+add (.*)/)
+          loc = $~[1].chop
 
-	  check_daily_reset
-	  add_loc loc
-	end
+          check_daily_reset
+          add_loc loc
+        end
 
-	if content.match(/\+del (.*)/)
-	  loc = $~[1].chop
+        if content.match(/\+del (.*)/)
+          loc = $~[1].chop
 
-	  # TBD
-	end
+          # TBD
+        end
 
-	if content.match(/\+reset/)
-	  reset
-	end
+        if content.match(/\+reset/)
+          reset
+        end
       end
 
       if msg.match(/^:(.*) 352 (.*) #{@channel} (.*)$/)
         who = $~[3].chop.split(" ")
 
-	if who[3] != @nick
+        if who[3] != @nick
           who_list << "#{who[0]}@#{who[1]}"
-	end
+        end
       end
 
       if msg.match(/^:(.*) 315 (.*) #{@channel} :(.*)$/)
         werfehlt who_list
-	who_list = []
+        who_list = []
       end
     end
   end
@@ -174,14 +170,14 @@ class MyBot
         if @cache["locations"][k].nil?
           @cache["locations"][k] = "#{login}"
           write_cache
-	  res = 1
-	elsif @cache["locations"][k].split(" ").include?(login)
-	  res = 2
-	else
+          res = 1
+        elsif @cache["locations"][k].split(" ").include?(login)
+          res = 2
+        else
           @cache["locations"][k] << "#{login} "
           write_cache
-	  res = 1
-	end
+          res = 1
+        end
 
         break
       end
@@ -212,9 +208,9 @@ class MyBot
 
     @cache["locations"].each do |k, v|
       unless v.nil?
-	unless v.empty?
+        unless v.empty?
           loc_stand << "#{v.split(" ").length}x #{k}"
-	end
+        end
       end
     end
 
@@ -245,10 +241,10 @@ class MyBot
     @cache["locations"].each do |k, v|
       unless v.nil?
         unless v.empty?
-	  v.split(" ").each do |n|
+          v.split(" ").each do |n|
             names_voted << n
-	  end
-	end
+          end
+        end
       end
     end
 
