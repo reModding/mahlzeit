@@ -53,6 +53,7 @@ class MyBot
     check
 
     who_list = []
+    nick_list = []
 
     until @socket.eof? do
       msg = @socket.gets
@@ -106,17 +107,18 @@ class MyBot
           say "WHO #{@channel}"
         end
 
-        if content.match(/\+add (.*)/)
-          loc = $~[1].chop
+        if content.match(/\+add ([a-zA-Z]*)/)
+          loc = $~[1]
 
           check_daily_reset
           add_loc loc
         end
 
-        if content.match(/\+del (.*)/)
-          loc = $~[1].chop
+        if content.match(/\+del ([a-zA-Z]*)/)
+          loc = $~[1]
 
-          # TBD
+	  check_daily_reset
+	  del_loc loc
         end
 
         if content.match(/\+reset/)
@@ -129,12 +131,14 @@ class MyBot
 
         if who[3] != @nick
           who_list << "#{who[0]}@#{who[1]}"
+	  nick_list << who[3]
         end
       end
 
       if msg.match(/^:(.*) 315 (.*) #{@channel} :(.*)$/)
-        werfehlt who_list
+        werfehlt who_list, nick_list
         who_list = []
+	nick_list = []
       end
     end
   end
@@ -231,11 +235,21 @@ class MyBot
     end
   end
 
+  def del_loc(loc)
+    if @cache["locations"].map { |k, v| k.downcase }.include?(loc.downcase)
+      @cache["locations"].delete "#{loc}"
+      write_cache
+      say_to_chan "#{loc} geloescht."
+    else
+      say_to_chan "#{loc} kenne ich nicht."
+    end
+  end
+
   def wasgibts(nick)
     say_to_chan("#{nick}, schau bitte hier: #{@wasgibts}")
   end
 
-  def werfehlt(who_list)
+  def werfehlt(who_list, nick_list)
     names_voted = []
 
     @cache["locations"].each do |k, v|
@@ -250,7 +264,13 @@ class MyBot
 
     names_voted.uniq!
 
-    say_to_chan "Bitte voten. #{(who_list - names_voted).join(", ")}"
+    names_voted.each do |n|
+      who_list_i = who_list.index(n)
+      who_list.delete_at(who_list_i)
+      nick_list.delete_at(who_list_i)
+    end
+
+    say_to_chan "Bitte voten. #{nick_list.join(", ")}"
   end
 
   def reset
@@ -281,6 +301,8 @@ end
 config = YAML.load_file("mahlzeitbot.yml")
 bot = MyBot.new(config["irc"]["server"], config["irc"]["port"], config["irc"]["channel"], config["irc"]["nick"], config["cache"], config["wasgibts"])
 
-trap("INT"){ bot.quit }
+trap("INT") do
+  bot.quit
+end
 
 bot.run
