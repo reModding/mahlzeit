@@ -185,7 +185,9 @@ class MyBot
         elsif @cache["locations"][k].split(" ").include?(login)
           res = 2
         else
-          @cache["locations"][k] << "#{login} "
+          logins_voted = @cache["locations"][k].split(" ")
+	  logins_voted << "#{login}"
+	  @cache["locations"][k] = logins_voted.join(" ")
           write_cache
           res = 1
         end
