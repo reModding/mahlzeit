@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'date'
 require 'socket'
 require 'yaml'
 
@@ -10,13 +11,18 @@ class MyBot
     @cache_file = cache
     @wasgibts = wasgibts
 
+    if @nick.length > 9
+      abort "Nick is too long (max. 9 characters)."
+    end
+
+    @lastvote = Date.today.yday
+
     @cache = YAML.load_file(@cache_file)
     @socket = TCPSocket.open(server, port)
 
     say "NICK #{@nick}"
     say "USER #{@nick} 8 * :#{@nick}"
     say "JOIN #{@channel}"
-    say_to_chan "#{1.chr}ACTION is here to test#{1.chr}"
   end
 
   def say(msg)
@@ -50,6 +56,8 @@ class MyBot
   def run
     check
 
+    who_list = []
+
     until @socket.eof? do
       msg = @socket.gets
       puts msg
@@ -79,6 +87,7 @@ class MyBot
 	  if votes > 1
 	    say_to_chan "Ich habe das Gefuehl, #{nick} ist heute besonders hungrig. Trotzdem hat jeder nur eine Stimme pro Ort."
 	  elsif votes == 1
+	    check_daily_reset
 	    add_vote voted_loc, nick, login
 	  end
 	end
@@ -88,28 +97,48 @@ class MyBot
 	end
 
 	if content.match(/\+stand/)
+	  check_daily_reset
 	  stand
 	end
 
 	if content.match(/\+wasgibts/)
-	  wasgibts(nick)
+	  wasgibts nick
 	end
 
 	if content.match(/\+werfehlt/)
+	  check_daily_reset
+	  say "WHO #{@channel}"
 	end
 
 	if content.match(/\+add (.*)/)
 	  loc = $~[1].chop
 
+	  check_daily_reset
 	  add_loc loc
 	end
 
 	if content.match(/\+del (.*)/)
 	  loc = $~[1].chop
+
+	  # TBD
 	end
 
 	if content.match(/\+reset/)
+	  reset
 	end
+      end
+
+      if msg.match(/^:(.*) 352 (.*) #{@channel} (.*)$/)
+        who = $~[3].chop.split(" ")
+
+	if who[3] != @nick
+          who_list << "#{who[0]}@#{who[1]}"
+	end
+      end
+
+      if msg.match(/^:(.*) 315 (.*) #{@channel} :(.*)$/)
+        werfehlt who_list
+	who_list = []
       end
     end
   end
@@ -130,7 +159,7 @@ class MyBot
 
     @cache["locations"].each do |k, v|
       if k.downcase == loc.downcase
-        vote_count = @cache["locations"][k].split(",").length
+        vote_count = @cache["locations"][k].split(" ").length
       end
     end
 
@@ -146,10 +175,10 @@ class MyBot
           @cache["locations"][k] = "#{login}"
           write_cache
 	  res = 1
-	elsif @cache["locations"][k].split(",").include?(login)
+	elsif @cache["locations"][k].split(" ").include?(login)
 	  res = 2
 	else
-          @cache["locations"][k] << "#{login},"
+          @cache["locations"][k] << "#{login} "
           write_cache
 	  res = 1
 	end
@@ -183,11 +212,17 @@ class MyBot
 
     @cache["locations"].each do |k, v|
       unless v.nil?
-        loc_stand << "#{v.split(",").length}x #{k}"
+	unless v.empty?
+          loc_stand << "#{v.split(" ").length}x #{k}"
+	end
       end
     end
 
-    say_to_chan(loc_stand.join(", "))
+    if loc_stand.length == 0
+      say_to_chan "Heute hat noch niemand eine Stimme abgegeben."
+    else
+      say_to_chan loc_stand.join(", ")
+    end
   end
 
   def add_loc(loc)
@@ -204,9 +239,45 @@ class MyBot
     say_to_chan("#{nick}, schau bitte hier: #{@wasgibts}")
   end
 
+  def werfehlt(who_list)
+    names_voted = []
+
+    @cache["locations"].each do |k, v|
+      unless v.nil?
+        unless v.empty?
+	  v.split(" ").each do |n|
+            names_voted << n
+	  end
+	end
+      end
+    end
+
+    names_voted.uniq!
+
+    say_to_chan "Bitte voten. #{(who_list - names_voted).join(", ")}"
+  end
+
+  def reset
+    @cache["locations"].each do |k, v|
+      @cache["locations"][k] = ""
+    end
+
+    write_cache
+    say_to_chan "Alle Votes stehen wieder auf 0."
+  end
+
+  def check_daily_reset
+    if @lastvote != Date.today.yday
+      say_to_chan "Neuer Tag, neues Glueck. Was es heute gibt, steht hier: #{@wasgibts}"
+      reset
+    else
+      @lastvote = Date.today.yday
+    end
+  end
+
   def quit
-    say "PART #{@channel} byebye"
-    say 'QUIT'
+    say "PART #{@channel}"
+    say "QUIT"
   end
 end
 
