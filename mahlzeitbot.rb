@@ -73,11 +73,11 @@ class MyBot
           next
         end
 
-        if content.match(/\+help/)
+        if content.match(/^\+help/)
           help
         end
 
-        if content.match(/\+([0-9]*) (.*)/)
+        if content.match(/^\+([0-9]*) (.*)/)
           votes = $~[1].to_i
           voted_loc = $~[2].chop
 
@@ -89,45 +89,45 @@ class MyBot
           end
         end
 
-      if content.match(/-1 (.*)/)
-        voted_loc = $~[1].chop
+        if content.match(/^-1 (.*)/)
+          voted_loc = $~[1].chop
 
-        del_vote voted_loc, nick, login
-      end
+          del_vote voted_loc, nick, login
+        end
 
-        if content.match(/\+orte/)
+        if content.match(/^\+orte/)
           orte
         end
 
-        if content.match(/\+stand/)
+        if content.match(/^\+stand/)
           check_daily_reset
           stand
         end
 
-        if content.match(/\+wasgibts/)
+        if content.match(/^\+wasgibts/)
           wasgibts nick
         end
 
-        if content.match(/\+werfehlt/)
+        if content.match(/^\+werfehlt/)
           check_daily_reset
           say "WHO #{@channel}"
         end
 
-        if content.match(/\+add ([a-zA-Z]*)/)
+        if content.match(/^\+add ([a-zA-Z]*)/)
           loc = $~[1]
 
           check_daily_reset
           add_loc loc
         end
 
-        if content.match(/\+del ([a-zA-Z]*)/)
+        if content.match(/^\+del ([a-zA-Z]*)/)
           loc = $~[1]
 
         check_daily_reset
         del_loc loc
         end
 
-        if content.match(/\+reset/)
+        if content.match(/^\+reset/)
           reset
         end
       end
