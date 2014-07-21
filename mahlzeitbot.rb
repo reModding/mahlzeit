@@ -89,11 +89,11 @@ class MyBot
           end
         end
 
-	if content.match(/-1 (.*)/)
-	  voted_loc = $~[1].chop
+      if content.match(/-1 (.*)/)
+        voted_loc = $~[1].chop
 
-	  del_vote voted_loc, nick, login
-	end
+        del_vote voted_loc, nick, login
+      end
 
         if content.match(/\+orte/)
           orte
@@ -123,8 +123,8 @@ class MyBot
         if content.match(/\+del ([a-zA-Z]*)/)
           loc = $~[1]
 
-	  check_daily_reset
-	  del_loc loc
+        check_daily_reset
+        del_loc loc
         end
 
         if content.match(/\+reset/)
@@ -137,14 +137,14 @@ class MyBot
 
         if who[3] != @nick
           who_list << "#{who[0]}@#{who[1]}"
-	  nick_list << who[3]
+        nick_list << who[3]
         end
       end
 
       if msg.match(/^:(.*) 315 (.*) #{@channel} :(.*)$/)
         werfehlt who_list, nick_list
         who_list = []
-	nick_list = []
+      nick_list = []
       end
     end
   end
@@ -186,8 +186,8 @@ class MyBot
           res = 2
         else
           logins_voted = @cache["locations"][k].split(" ")
-	  logins_voted << "#{login}"
-	  @cache["locations"][k] = logins_voted.join(" ")
+        logins_voted << "#{login}"
+        @cache["locations"][k] = logins_voted.join(" ")
           write_cache
           res = 1
         end
@@ -215,18 +215,18 @@ class MyBot
           res = 2
         else
           logins_voted = @cache["locations"][k].split(" ")
-	
+      
           if logins_voted.include?(login)
             logins_voted.delete login
             @cache["locations"][k] = logins_voted.join(" ")
             write_cache
-	    res = 1
+          res = 1
           else
-	    res = 2
+          res = 2
           end
         end
 
-	break
+      break
       end
     end
 
@@ -331,10 +331,9 @@ class MyBot
 
   def check_daily_reset
     if @lastvote != Date.today.yday
+      @lastvote = Date.today.yday
       say_to_chan "Neuer Tag, neues Glueck. Was es heute gibt, steht hier: #{@wasgibts}"
       reset
-    else
-      @lastvote = Date.today.yday
     end
   end
 
