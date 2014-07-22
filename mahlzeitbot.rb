@@ -254,10 +254,8 @@ class MyBot
     loc_stand = []
 
     @cache["locations"].each do |k, v|
-      unless v.nil?
-        unless v.empty?
-          loc_stand << "#{v.split(" ").length}x #{k}"
-        end
+      if !v.nil? && !v.emty?
+        loc_stand << "#{v.split(" ").length}x #{k}"
       end
     end
 
@@ -296,11 +294,9 @@ class MyBot
     names_voted = []
 
     @cache["locations"].each do |k, v|
-      unless v.nil?
-        unless v.empty?
-          v.split(" ").each do |n|
-            names_voted << n
-          end
+      if !v.nil? && !v.empty?
+        v.split(" ").each do |n|
+          names_voted << n
         end
       end
     end
@@ -316,7 +312,7 @@ class MyBot
     if nick_list.length == 0
       say_to_chan "Es haben schon alle im Channel abgestimmt."
     else
-      say_to_chan "Bitte voten. #{nick_list.join(", ")}"
+      say_to_chan "Bitte voten: #{nick_list.join(", ")}"
     end
   end
 
