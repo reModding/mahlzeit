@@ -99,12 +99,12 @@ class MyBot
           orte
         end
 
-        if content.match(/^\+stand/)
+        if content.match(/^\+(stand|wiestehts)/)
           check_daily_reset
           stand
         end
 
-        if content.match(/^\+wasgibts/)
+        if content.match(/^\+(wasgibts|wasgibtsheute)/)
           wasgibts nick
         end
 
