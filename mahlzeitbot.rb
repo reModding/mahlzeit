@@ -340,7 +340,7 @@ class MyBot
 end
 
 
-config = YAML.load_file("mahlzeitbot.yml")
+config = YAML.load_file(ARGV[1])
 bot = MyBot.new(config["irc"]["server"], config["irc"]["port"], config["irc"]["channel"], config["irc"]["nick"], config["cache"], config["wasgibts"])
 
 trap("INT") do

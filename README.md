@@ -22,5 +22,5 @@ for file in *.dist; do cp "$file" "$(basename "$file" .dist)"; done
 vim mahlzeitbot.yml
 
 chmod +x mahlzeitbot.rb
-./mahlzeitbot.rb
+./mahlzeitbot.rb mahlzeitbot.yml
 ```
