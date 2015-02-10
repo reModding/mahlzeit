@@ -67,7 +67,7 @@ class MyBot
       if msg.match(/^:(.*)!(.*) PRIVMSG #{@channel} :(.*)$/)
         nick = $~[1]
         login = $~[2]
-        content = $~[3].strip
+        content = $~[3]
 
         if nick == @nick
           next
