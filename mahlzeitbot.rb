@@ -254,7 +254,7 @@ class MyBot
     loc_stand = []
 
     @cache["locations"].each do |k, v|
-      if !v.nil? && !v.emty?
+      if !v.nil? && !v.empty?
         loc_stand << "#{v.split(" ").length}x #{k}"
       end
     end
