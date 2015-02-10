@@ -254,7 +254,7 @@ class MyBot
     loc_stand = []
 
     @cache["locations"].each do |k, v|
-      if !v.blank?
+      if !v.nil? && !v.emty?
         loc_stand << "#{v.split(" ").length}x #{k}"
       end
     end
@@ -294,7 +294,7 @@ class MyBot
     names_voted = []
 
     @cache["locations"].each do |k, v|
-      if !v.blank?
+      if !v.nil? && !v.empty?
         v.split(" ").each do |n|
           names_voted << n
         end
