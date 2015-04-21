@@ -7,6 +7,7 @@ require 'yaml'
 class MyBot
   def initialize(server, port, channel, nick, cache, wasgibts)
     @channel = channel
+    # Hard cut of the nick length if it exceeds 9 characters:
     @nick = nick[0, 9]
     @cache_file = cache
     @wasgibts = wasgibts
@@ -178,16 +179,16 @@ class MyBot
   end
 
   def help
-    say_to_chan "+orte        - gibt eine Liste aller Orte aus, die ich kenne."
-    say_to_chan "+1 ORT       - stimmt fuer den Ort."
-    say_to_chan "-1 ORT       - nimmt seine Stimme zurueck."
-    say_to_chan "+stand       - gibt den aktuellen Punktestand aus."
-    say_to_chan "+wasgibts    - schickt den aktuellen Intra-Link."
-    say_to_chan "+werfehlt    - zeigt alle an, die noch nicht gevotet haben."
-    say_to_chan "+wergeht ORT - zeigt alle an, die zu diesem Ort gehen."
-    say_to_chan "+add ORT     - fuegt einen Ort hinzu."
-#   say_to_chan "+del ORT     - entfernt einen Ort."
-    say_to_chan "+reset       - setzt alle Votes zurueck."
+    say_to_chan "+orte     - gibt eine Liste aller Orte aus, die ich kenne."
+    say_to_chan "+1 ORT    - stimmt fuer den Ort."
+    say_to_chan "-1 ORT    - nimmt seine Stimme zurueck."
+    say_to_chan "+stand    - gibt den aktuellen Punktestand aus."
+    say_to_chan "+wasgibts - schickt den aktuellen Intra-Link."
+    say_to_chan "+werfehlt - zeigt alle an, die noch nicht gevotet haben."
+    say_to_chan "+wergeht  - zeigt alle an, die zu diesem Ort gehen."
+    say_to_chan "+add ORT  - fuegt einen Ort hinzu."
+#   say_to_chan "+del ORT  - entfernt einen Ort."
+    say_to_chan "+reset    - setzt alle Votes zurueck."
   end
 
   def count_votes(loc)
