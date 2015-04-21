@@ -266,7 +266,7 @@ class MyBot
       loc_keys << k
     end
 
-    say_to_chan(loc_keys.join(", "))
+    say_to_chan(loc_keys.sort.join(", "))
   end
 
   def stand
@@ -281,7 +281,7 @@ class MyBot
     if loc_stand.length == 0
       say_to_chan "Heute hat noch niemand eine Stimme abgegeben."
     else
-      say_to_chan loc_stand.join(", ")
+      say_to_chan loc_stand.sort_by(&:to_i).reverse.join(", ")
     end
   end
 
@@ -354,7 +354,7 @@ class MyBot
       say_to_chan "Es hat noch keiner abgestimmt."
     else
       say_to_chan "#{nick}: Um Highlight-Spam zu verhindern, habe ic Dir diese Nachricht im Query geschickt."
-      say_to_nick nick, "#{locations_voted.join(" / ")}"
+      say_to_nick nick, "#{locations_voted.sort_by(&:to_i).reverse.join(" / ")}"
     end
   end
 
