@@ -353,7 +353,7 @@ class MyBot
     if locations_voted.length == 0
       say_to_chan "Es hat noch keiner abgestimmt."
     else
-      say_to_chan "#{nick}: Um Highlight-Spam zu verhindern, habe ic Dir diese Nachricht im Query geschickt."
+      say_to_chan "#{nick}: Um Highlight-Spam zu verhindern, habe ich Dir diese Nachricht im Query geschickt."
       say_to_nick nick, "#{locations_voted.sort_by(&:to_i).reverse.join(" / ")}"
     end
   end
