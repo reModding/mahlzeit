@@ -284,7 +284,7 @@ class MyBot
 
     @cache["locations"].each do |k, v|
       if !v.nil? && !v.empty?
-        loc_stand << "#{v.split(" ").length}x #{k}"
+        loc_stand << "#{count_votes(k)}x #{k}"
       end
     end
 
@@ -356,7 +356,7 @@ class MyBot
 	  nicks_voted << nick_list[who_list.index(n)]
         end
         
-	locations_voted << "#{k}: #{nicks_voted.join(", ")}"
+	locations_voted << "#{count_votes(k)}x #{k}: #{nicks_voted.join(", ")}"
       end
     end
 
