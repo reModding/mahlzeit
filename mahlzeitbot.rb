@@ -65,12 +65,12 @@ class MyBot
       msg = @socket.gets
       puts msg
 
-      if msg.match(/^PING :(.*)$/)
+      case msg
+      when /^PING :(.*)$/
         say "PONG #{$~[1]}"
         next
-      end
 
-      if msg.match(/^:(.*)!(.*) PRIVMSG (.*) :(.*)$/)
+      when /^:(.*)!(.*) PRIVMSG (.*) :(.*)$/
         nick = $~[1]
         login = $~[2]
 	rcpt = $~[3]
@@ -87,11 +87,11 @@ class MyBot
 	  next
 	end
 
-        if content.match(/^\+help/)
+	case content
+        when /^\+help/
           help
-        end
 
-        if content.match(/^\+([0-9]*) (.*)/)
+        when /^\+([0-9]*) (.*)/
           votes = $~[1].to_i
           voted_loc = $~[2].chop
 
@@ -101,70 +101,59 @@ class MyBot
             check_daily_reset
             add_vote voted_loc, nick, login
           end
-        end
 
-        if content.match(/^-1 (.*)/)
+        when /^-1 (.*)/
           voted_loc = $~[1].chop
 
           del_vote voted_loc, nick, login
-        end
 
-        if content.match(/^\+orte/)
+        when /^\+orte/
           orte
-        end
 
-        if content.match(/^\+(stand|wiestehts)/)
+        when /^\+(stand|wiestehts)/
           check_daily_reset
           stand
-        end
 
-        if content.match(/^\+(wasgibts|wasgibtsheute)/)
+        when /^\+(wasgibts|wasgibtsheute)/
           wasgibts nick
-        end
 
-        if content.match(/^\+werfehlt/)
+        when /^\+werfehlt/
           check_daily_reset
 	  forcecmd = :werfehlt
           say "WHO #{@channel}"
-        end
 
-        if content.match(/^\+(wergeht|wergehtzu)/)
+        when /^\+(wergeht|wergehtzu)/
           loc = $~[1]
 
           check_daily_reset
 	  forcecmd = :wergeht
           say "WHO #{@channel}"
-        end
 
-        if content.match(/^\+add ([a-zA-Z]*)/)
+        when /^\+add ([a-zA-Z]*)/
           loc = $~[1]
 
           check_daily_reset
           add_loc loc
-        end
 
-        if content.match(/^\+del ([a-zA-Z]*)/)
+        when /^\+del ([a-zA-Z]*)/
           loc = $~[1]
 
           check_daily_reset
           del_loc loc
-        end
 
-        if content.match(/^\+reset/)
+        when /^\+reset/
           reset
-        end
-      end
+	end
 
-      if msg.match(/^:(.*) 352 (.*) #{@channel} (.*)$/)
+      when /^:(.*) 352 (.*) #{@channel} (.*)$/
         who = $~[3].chop.split(" ")
 
         if who[3] != @nick
           who_list << "#{who[0]}@#{who[1]}"
           nick_list << who[3]
         end
-      end
 
-      if msg.match(/^:(.*) 315 (.*) #{@channel} :(.*)$/)
+      when /^:(.*) 315 (.*) #{@channel} :(.*)$/
         case forcecmd
 	  when :werfehlt
             werfehlt who_list, nick_list
