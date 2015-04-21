@@ -30,6 +30,10 @@ class MyBot
     say "PRIVMSG #{@channel} :#{msg}"
   end
 
+  def say_to_nick(nick, msg)
+    say "PRIVMSG #{nick} :#{msg}"
+  end
+
   def write_cache
     File.open(@cache_file, "w") do |f|
       f.write @cache.to_yaml
@@ -54,6 +58,7 @@ class MyBot
 
     who_list = []
     nick_list = []
+    forcecmd = nil
 
     until @socket.eof? do
       msg = @socket.gets
@@ -64,14 +69,22 @@ class MyBot
         next
       end
 
-      if msg.match(/^:(.*)!(.*) PRIVMSG #{@channel} :(.*)$/)
+      if msg.match(/^:(.*)!(.*) PRIVMSG (.*) :(.*)$/)
         nick = $~[1]
         login = $~[2]
-        content = $~[3]
+	rcpt = $~[3]
+        content = $~[4]
 
+        # Ignore my own messages:
         if nick == @nick
           next
         end
+
+	# Message to me?
+	if rcpt == @nick
+	  say_to_nick nick, "Bitte antworte mir in #{@channel}."
+	  next
+	end
 
         if content.match(/^\+help/)
           help
@@ -110,6 +123,15 @@ class MyBot
 
         if content.match(/^\+werfehlt/)
           check_daily_reset
+	  forcecmd = :werfehlt
+          say "WHO #{@channel}"
+        end
+
+        if content.match(/^\+(wergeht|wergehtzu)/)
+          loc = $~[1]
+
+          check_daily_reset
+	  forcecmd = :wergeht
           say "WHO #{@channel}"
         end
 
@@ -142,7 +164,13 @@ class MyBot
       end
 
       if msg.match(/^:(.*) 315 (.*) #{@channel} :(.*)$/)
-        werfehlt who_list, nick_list
+        case forcecmd
+	  when :werfehlt
+            werfehlt who_list, nick_list
+	  when :wergeht
+	    wergeht who_list, nick_list, nick, login
+	end
+
         who_list = []
         nick_list = []
       end
@@ -150,15 +178,16 @@ class MyBot
   end
 
   def help
-    say_to_chan "+orte     - gibt eine Liste aller Orte aus, die ich kenne."
-    say_to_chan "+1 ORT    - stimmt fuer den Ort."
-    say_to_chan "-1 ORT    - nimmt seine Stimme zurueck."
-    say_to_chan "+stand    - gibt den aktuellen Punktestand aus."
-    say_to_chan "+wasgibts - schickt den aktuellen Intra-Link."
-    say_to_chan "+werfehlt - zeigt alle an, die noch nicht gevotet haben."
-    say_to_chan "+add ORT  - fuegt einen Ort hinzu."
-#   say_to_chan "+del ORT  - entfernt einen Ort."
-    say_to_chan "+reset    - setzt alle Votes zurueck."
+    say_to_chan "+orte        - gibt eine Liste aller Orte aus, die ich kenne."
+    say_to_chan "+1 ORT       - stimmt fuer den Ort."
+    say_to_chan "-1 ORT       - nimmt seine Stimme zurueck."
+    say_to_chan "+stand       - gibt den aktuellen Punktestand aus."
+    say_to_chan "+wasgibts    - schickt den aktuellen Intra-Link."
+    say_to_chan "+werfehlt    - zeigt alle an, die noch nicht gevotet haben."
+    say_to_chan "+wergeht ORT - zeigt alle an, die zu diesem Ort gehen."
+    say_to_chan "+add ORT     - fuegt einen Ort hinzu."
+#   say_to_chan "+del ORT     - entfernt einen Ort."
+    say_to_chan "+reset       - setzt alle Votes zurueck."
   end
 
   def count_votes(loc)
@@ -313,6 +342,29 @@ class MyBot
       say_to_chan "Es haben schon alle im Channel abgestimmt."
     else
       say_to_chan "Bitte voten: #{nick_list.join(", ")}"
+    end
+  end
+
+  def wergeht(who_list, nick_list, nick, login)
+    locations_voted = []
+
+    @cache["locations"].each do |k, v|
+      if !v.nil? && !v.empty?
+        nicks_voted = []
+
+        v.split(" ").each do |n|
+	  nicks_voted << nick_list[who_list.index(n)]
+        end
+        
+	locations_voted << "#{k}: #{nicks_voted.join(", ")}"
+      end
+    end
+
+    if locations_voted.length == 0
+      say_to_chan "Es hat noch keiner abgestimmt."
+    else
+      say_to_chan "#{nick}: Um Highlight-Spam zu verhindern, habe ic Dir diese Nachricht im Query geschickt."
+      say_to_nick nick, "#{locations_voted.join(" / ")}"
     end
   end
 
